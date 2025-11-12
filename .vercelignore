@@ -1,0 +1,25 @@
+# Exclude models from Vercel deployment
+models/
+models/**/*
+*.pkl
+models-release/
+models-release.zip
+
+# Exclude data files
+data/
+data/**/*
+
+# Exclude notebook checkpoints
+.ipynb_checkpoints/
+.ipynb_checkpoints/**/*
+
+# Exclude Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Exclude other large files
+*.ipynb
+!ClusteringAndDimensionalityReduction.ipynb
+

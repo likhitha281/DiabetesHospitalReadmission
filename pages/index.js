@@ -55,7 +55,9 @@ export default function Home() {
 
     try {
       // Call the API endpoint
-      const response = await fetch('/api/predict', {
+      // If using Railway/Render, replace with your API URL
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/predict';
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
