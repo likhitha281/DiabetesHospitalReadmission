@@ -1,6 +1,8 @@
 """
 Vercel Serverless Function for Cluster Prediction
 Handles POST requests with patient data and returns cluster prediction
+
+NOTE: Models are loaded from external storage to avoid Vercel's 250MB limit
 """
 
 import json
@@ -9,17 +11,75 @@ import os
 from pathlib import Path
 import pandas as pd
 import numpy as np
+import urllib.request
+import tempfile
+import hashlib
+
+# Configuration - Update these URLs to point to your model storage
+# Option 1: GitHub Releases (recommended for public repos)
+MODEL_BASE_URL = os.environ.get(
+    'MODEL_BASE_URL',
+    'https://github.com/likhitha281/DiabetesHospitalReadmission/releases/download/v1.0.0-models/'
+)
+
+# Option 2: Use direct URLs (S3, Google Cloud Storage, etc.)
+# MODEL_BASE_URL = os.environ.get('MODEL_BASE_URL', 'https://your-storage-bucket.s3.amazonaws.com/models/')
+
+MODEL_FILES = [
+    'scaler.pkl',
+    'label_encoders.pkl',
+    'kmeans_model.pkl',
+    'feature_info.pkl',
+    'cluster_profiles.pkl'
+]
 
 # Global cache for models
 _models_cache = None
+_models_dir = None
+
+def download_model(url, dest_path):
+    """Download a model file from URL"""
+    try:
+        print(f"Downloading {url} to {dest_path}")
+        urllib.request.urlretrieve(url, dest_path)
+        print(f"Successfully downloaded {dest_path}")
+        return True
+    except Exception as e:
+        print(f"Error downloading {url}: {str(e)}")
+        return False
+
+def ensure_models():
+    """Ensure all model files are available, download if needed"""
+    global _models_dir
+    
+    # Use temp directory for models
+    if _models_dir is None:
+        _models_dir = Path(tempfile.gettempdir()) / 'diabetes_models'
+        _models_dir.mkdir(exist_ok=True)
+    
+    # Check if models exist locally
+    all_exist = all((_models_dir / f).exists() for f in MODEL_FILES)
+    
+    if not all_exist:
+        print("Models not found locally, downloading...")
+        for model_file in MODEL_FILES:
+            local_path = _models_dir / model_file
+            if not local_path.exists():
+                url = f"{MODEL_BASE_URL}{model_file}"
+                if not download_model(url, local_path):
+                    raise Exception(f"Failed to download model: {model_file}")
+        print("All models downloaded successfully")
+    else:
+        print("Models found locally, using cached versions")
+    
+    return _models_dir
 
 def load_models():
     """Load all saved models"""
     try:
-        # Get the absolute path to models directory
-        current_dir = Path(__file__).parent
-        project_root = current_dir.parent
-        models_dir = project_root / 'models'
+        models_dir = ensure_models()
+        
+        print("Loading models from:", models_dir)
         
         # Load scaler
         with open(models_dir / 'scaler.pkl', 'rb') as f:
@@ -41,6 +101,7 @@ def load_models():
         with open(models_dir / 'cluster_profiles.pkl', 'rb') as f:
             cluster_profiles = pickle.load(f)
         
+        print("All models loaded successfully")
         return scaler, label_encoders, kmeans_model, feature_info, cluster_profiles
     except Exception as e:
         raise Exception(f"Error loading models: {str(e)}")
@@ -144,7 +205,7 @@ def handler(request):
                 'body': json.dumps({'error': 'No input data provided'})
             }
         
-        # Load models
+        # Load models (will download on first request if needed)
         scaler, label_encoders, kmeans_model, feature_info, cluster_profiles = get_models()
         
         # Preprocess input

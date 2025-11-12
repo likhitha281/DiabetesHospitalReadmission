@@ -39,5 +39,7 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints
 
-# Models (optional - uncomment if models are too large for Git)
-# models/*.pkl
+# Models - excluded from Git (too large for Vercel, use external storage)
+models/*.pkl
+models-release/
+models-release.zip
