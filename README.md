@@ -122,7 +122,7 @@ Interactive Swagger UI documentation (highly recommended!)
 
 ## 📊 Model Performance
 
-- **Algorithm:** Random Forest Classifier (100 estimators, max depth 10)
+- **Algorithm:** K-Means Clustering
 - **Training Accuracy:** 85%+
 - **Test Accuracy:** 83%+
 - **Features:** 8 clinical variables
@@ -377,29 +377,6 @@ Build and run:
 docker build -t diabetes-api .
 docker run -p 8000:8000 diabetes-api
 ```
-
-## 🔮 Future Enhancements
-
-### High Priority
-- [ ] Add authentication/API keys for access control
-- [ ] Implement rate limiting to prevent abuse
-- [ ] HTTPS/SSL certificate for secure communication
-- [ ] Add Prometheus metrics for monitoring
-- [ ] Implement request logging and analytics
-
-### Medium Priority
-- [ ] MLflow integration for experiment tracking and model versioning
-- [ ] A/B testing framework for model comparison
-- [ ] Batch prediction endpoint for multiple patients
-- [ ] Feature importance endpoint in API
-- [ ] CI/CD pipeline with GitHub Actions
-
-### Long Term
-- [ ] Model retraining pipeline with new data
-- [ ] Data drift detection and alerting
-- [ ] Multi-model ensemble for improved accuracy
-- [ ] Web UI for non-technical users
-- [ ] Integration with hospital EMR systems
 
 ## 🧪 Testing
 ```bash
